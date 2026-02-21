@@ -12,6 +12,11 @@ BLOCKED_KEYWORDS = {
     "os.system",
     "subprocess.",
     "shutil.",
+    "#include <filesystem>",
+    "#include <cstdlib>",
+    "system(",
+    "popen(",
+    "fork(",
 }
 
 

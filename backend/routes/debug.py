@@ -1,7 +1,9 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from services.sanitizer import is_code_safe
-from services.executor import execute_python
+from services.executor import execute_code
+from services.llm_service import generate_fix
+from services.llm_fallback import generate_fix_fallback
 
 debug_router = APIRouter(prefix="/api")
 
@@ -29,9 +31,25 @@ async def debug_code(request: DebugRequest):
     if not is_safe:
         raise HTTPException(status_code=400, detail=f"Unsafe code detected: {reason}")
 
-    execution_result = execute_python(request.code)
+    execution_result = execute_code(language, request.code)
+
+    ai_suggestion = None
+
+    if not execution_result["success"]:
+        error_text = (
+            execution_result.get("stderr")
+            or execution_result.get("error")
+            or "Unknown error"
+        )
+
+        ai_suggestion = generate_fix(
+            language=language,
+            code=request.code,
+            error=error_text,
+        )
 
     return {
         "message": "Execution completed",
         "result": execution_result,
+        "ai_fix": ai_suggestion.model_dump() if ai_suggestion else None,
     }
