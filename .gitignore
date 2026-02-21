@@ -1,0 +1,105 @@
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.sublime-project
+.sublime-workspace
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+
+# Environment variables and config
+.env
+.env.local
+.env.*.local
+config/local.json
+config/production.json
+
+# Python virtual environments (for potential backend)
+venv/
+env/
+ENV/
+.venv/
+.env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Django (for potential backend)
+*.py[cod]
+*$py.class
+db.sqlite3
+media/
+staticfiles/
+
+# Flask (for potential backend)
+instance/
+.webassets-cache
+
+# Node.js (additional root level)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+build/
+dist/
+out/
+
+# Coverage reports
+coverage/
+*.lcov
+htmlcov/
+
+# Documentation builds
+docs/_build/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Package files
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Security and keys
+*.pem
+*.key
+.certificates/
+
+# Project specific
+.history/
+.vscode/settings.json
