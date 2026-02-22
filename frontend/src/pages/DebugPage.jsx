@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import CodeEditor from '../components/CodeEditor';
 import LanguageSelector from '../components/LanguageSelector';
 import DebugButton from '../components/DebugButton';
+import { parseErrors } from '../utils/errorParser';
 
 const DebugPage = () => {
     const [selectedLanguage, setSelectedLanguage] = useState('python');
     const [code, setCode] = useState('# Welcome to NeuroDebug!\nprint("Hello, World!")');
     const [output, setOutput] = useState('');
     const [isDebugging, setIsDebugging] = useState(false);
+    const [errors, setErrors] = useState([]);
 
     const handleLanguageChange = (language) => {
         setSelectedLanguage(language);
@@ -15,6 +17,7 @@ const DebugPage = () => {
         const defaultCode = getDefaultCodeForLanguage(language);
         setCode(defaultCode);
         setOutput(''); // Clear output when language changes
+        setErrors([]); // Clear errors when language changes
     };
 
     const getDefaultCodeForLanguage = (language) => {
@@ -41,6 +44,7 @@ const DebugPage = () => {
     const handleDebugStart = () => {
         setIsDebugging(true);
         setOutput('🔄 Analyzing code...\n');
+        setErrors([]); // Clear previous errors
     };
 
     const handleDebugResult = (result) => {
@@ -48,9 +52,21 @@ const DebugPage = () => {
 
         if (result.error) {
             setOutput(`❌ Error: ${result.error}\n\nPlease check if the backend server is running.`);
+            setErrors([]);
         } else {
             // Parse and format the API response
             const { message, result: executionResult, ai_fix } = result;
+
+            // Parse errors for highlighting
+            const parsedErrors = [];
+            if (executionResult && !executionResult.success) {
+                const errorText = executionResult.stderr || executionResult.error;
+                if (errorText) {
+                    const parsed = parseErrors(errorText, selectedLanguage);
+                    parsedErrors.push(...parsed);
+                }
+            }
+            setErrors(parsedErrors);
 
             let debugOutput = `📊 Debug Analysis Complete!\n\n`;
             debugOutput += `Language: ${selectedLanguage.toUpperCase()}\n`;
@@ -73,6 +89,11 @@ const DebugPage = () => {
                 // Error Output
                 if (executionResult.stderr) {
                     debugOutput += `⚠️ Errors:\n${executionResult.stderr}\n\n`;
+
+                    // Add error highlighting info if errors were found
+                    if (parsedErrors.length > 0) {
+                        debugOutput += `🎯 Found ${parsedErrors.length} error(s) highlighted in the editor\n\n`;
+                    }
                 }
 
                 // General Error
@@ -110,6 +131,10 @@ const DebugPage = () => {
 
     const handleCodeChange = (newCode) => {
         setCode(newCode);
+        // Clear errors when code changes (user is editing)
+        if (errors.length > 0) {
+            setErrors([]);
+        }
     };
 
     return (
@@ -151,6 +176,7 @@ const DebugPage = () => {
                     language={selectedLanguage}
                     value={code}
                     onChange={handleCodeChange}
+                    errors={errors}
                 />
             </div>
 

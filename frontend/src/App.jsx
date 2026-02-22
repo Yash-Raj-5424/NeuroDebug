@@ -1,6 +1,7 @@
 import React from 'react';
 import DebugPage from './pages/DebugPage';
 import './App.css';
+import './styles/editor-errors.css';
 
 function App() {
     return (

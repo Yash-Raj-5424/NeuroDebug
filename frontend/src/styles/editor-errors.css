@@ -1,0 +1,45 @@
+/* Error highlighting styles for Monaco Editor */
+.monaco-editor .squiggly-error {
+  background: url("data:image/svg+xml,%3csvg width='6' height='3' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='m0 3 l3 -3 l3 3' stroke='rgb(255, 18, 18)' fill='none' stroke-width='1'/%3e%3c/svg%3e") repeat-x bottom left;
+}
+
+.monaco-editor .margin-view-overlays .codicon-error {
+  color: #ff1212 !important;
+}
+
+/* Error tooltip styling */
+.monaco-editor .hover-row .monaco-hover {
+  border: 1px solid #ff1212;
+}
+
+.monaco-editor .hover-row .monaco-hover-content {
+  background-color: #2d2d2d;
+  color: #fff;
+}
+
+/* Problem panel styling */
+.monaco-editor .marker-widget {
+  border: 1px solid #ff1212;
+  background-color: #2d2d2d;
+}
+
+.monaco-editor .marker-widget .title {
+  color: #ff1212;
+}
+
+/* Glyph margin error icon */
+.monaco-editor .cgmr.codicon-error {
+  color: #ff1212 !important;
+}
+
+/* Line number highlighting for errors */
+.monaco-editor .line-numbers .error-line-number {
+  color: #ff1212 !important;
+  font-weight: bold;
+}
+
+/* Custom error decoration */
+.error-line-decoration {
+  background-color: rgba(255, 18, 18, 0.1);
+  border-left: 3px solid #ff1212;
+}
