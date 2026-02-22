@@ -38,25 +38,74 @@ const DebugPage = () => {
         return defaults[language] || '// Welcome to NeuroDebug!\n// Start coding here...';
     };
 
-    const handleDebug = async () => {
+    const handleDebugStart = () => {
         setIsDebugging(true);
         setOutput('🔄 Analyzing code...\n');
+    };
 
-        // Simulate debugging process
-        setTimeout(() => {
-            const debugOutput = `📊 Debug Analysis Complete!\n\n` +
-                `Language: ${selectedLanguage.toUpperCase()}\n` +
-                `Lines of code: ${code.split('\\n').length}\n` +
-                `Characters: ${code.length}\n` +
-                `Non-empty lines: ${code.split('\\n').filter(line => line.trim().length > 0).length}\n\n` +
-                `✅ Syntax analysis: No errors detected\\n` +
-                `💡 Suggestions: Code looks good!\\n` +
-                `🔍 Performance: No issues found\\n\\n` +
-                `Ready for execution! 🚀`;
+    const handleDebugResult = (result) => {
+        setIsDebugging(false);
+
+        if (result.error) {
+            setOutput(`❌ Error: ${result.error}\n\nPlease check if the backend server is running.`);
+        } else {
+            // Parse and format the API response
+            const { message, result: executionResult, ai_fix } = result;
+
+            let debugOutput = `📊 Debug Analysis Complete!\n\n`;
+            debugOutput += `Language: ${selectedLanguage.toUpperCase()}\n`;
+            debugOutput += `Lines of code: ${code.split('\\n').length}\n`;
+            debugOutput += `Characters: ${code.length}\n\n`;
+
+            // Execution Results
+            if (executionResult) {
+                debugOutput += `🔧 Execution Status: ${executionResult.success ? '✅ SUCCESS' : '❌ FAILED'}\n\n`;
+
+                if (executionResult.execution_time) {
+                    debugOutput += `⏱️ Execution Time: ${executionResult.execution_time}\n\n`;
+                }
+
+                // Standard Output
+                if (executionResult.stdout) {
+                    debugOutput += `📤 Output:\n${executionResult.stdout}\n\n`;
+                }
+
+                // Error Output
+                if (executionResult.stderr) {
+                    debugOutput += `⚠️ Errors:\n${executionResult.stderr}\n\n`;
+                }
+
+                // General Error
+                if (executionResult.error) {
+                    debugOutput += `❌ Error Details:\n${executionResult.error}\n\n`;
+                }
+            }
+
+            // AI Suggestions
+            if (ai_fix) {
+                debugOutput += `🤖 AI Suggestions:\n`;
+                if (ai_fix.explanation) {
+                    debugOutput += `💡 Explanation: ${ai_fix.explanation}\n\n`;
+                }
+                if (ai_fix.fixed_code) {
+                    debugOutput += `✨ Suggested Fix:\n${ai_fix.fixed_code}\n\n`;
+                }
+                if (ai_fix.suggestions && ai_fix.suggestions.length > 0) {
+                    debugOutput += `📋 Additional Tips:\n`;
+                    ai_fix.suggestions.forEach((tip, index) => {
+                        debugOutput += `${index + 1}. ${tip}\n`;
+                    });
+                    debugOutput += `\n`;
+                }
+            }
+
+            // If no specific output, show success message
+            if (!executionResult?.stdout && !executionResult?.stderr && !executionResult?.error && executionResult?.success) {
+                debugOutput += `✅ Code executed successfully with no output.\n`;
+            }
 
             setOutput(debugOutput);
-            setIsDebugging(false);
-        }, 2000);
+        }
     };
 
     const handleCodeChange = (newCode) => {
@@ -106,7 +155,13 @@ const DebugPage = () => {
             </div>
 
             {/* Debug Button */}
-            <DebugButton onDebug={handleDebug} isLoading={isDebugging} />
+            <DebugButton
+                code={code}
+                language={selectedLanguage}
+                onDebug={handleDebugStart}
+                onResult={handleDebugResult}
+                isLoading={isDebugging}
+            />
 
             {/* Output Section */}
             <div style={{

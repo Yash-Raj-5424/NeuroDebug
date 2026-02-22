@@ -1,9 +1,24 @@
 import React, { useState } from 'react';
+import { debugCode } from "../api/debugApi";
 
-const DebugButton = ({ onDebug, isLoading = false }) => {
-    const handleClick = () => {
-        if (!isLoading && onDebug) {
-            onDebug();
+const DebugButton = ({ code, language, onDebug, onResult, isLoading = false }) => {
+    const handleClick = async () => {
+        if (!isLoading && code && language) {
+            if (onDebug) {
+                onDebug(); // Call onDebug to start the debugging process
+            }
+
+            try {
+                const result = await debugCode(code, language);
+                if (onResult) {
+                    onResult(result);
+                }
+            } catch (error) {
+                console.error('Debug API error:', error);
+                if (onResult) {
+                    onResult({ error: 'Failed to debug code' });
+                }
+            }
         }
     };
 

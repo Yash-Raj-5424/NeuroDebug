@@ -103,3 +103,5 @@ docs/_build/
 # Project specific
 .history/
 .vscode/settings.json
+
+backend/test.py
