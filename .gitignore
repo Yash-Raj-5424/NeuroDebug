@@ -104,4 +104,9 @@ docs/_build/
 .history/
 .vscode/settings.json
 
+# Run scripts (environment specific)
+run.sh
+start.sh
+dev.sh
+
 backend/test.py

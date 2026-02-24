@@ -19,6 +19,7 @@ client = genai.Client(api_key=api_key)
 class BugFixResponse(BaseModel):
     explanation: str
     fixed_code: str
+    confidence: float
 
 
 def generate_fix(language: str, code: str, error: str) -> BugFixResponse:
@@ -38,10 +39,12 @@ Error:
 
 Respond ONLY with valid JSON in this format:
 {{
-  "explanation": "...",
-  "fixed_code": "..."
+  "explanation": "Brief explanation of the issue and fix",
+  "fixed_code": "Complete corrected code",
+  "confidence": 0.95
 }}
 
+The confidence field should be a float between 0.0 and 1.0 indicating your certainty about the fix.
 Do not include markdown or extra text.
 """
 
@@ -60,7 +63,10 @@ Do not include markdown or extra text.
             return BugFixResponse(
                 explanation=f"Failed to parse LLM response: {parse_error}",
                 fixed_code="",
+                confidence=0.0,
             )
 
     except Exception as e:
-        return BugFixResponse(explanation=f"LLM error: {str(e)}", fixed_code="")
+        return BugFixResponse(
+            explanation=f"LLM error: {str(e)}", fixed_code="", confidence=0.0
+        )
