@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import CodeEditor from '../components/CodeEditor';
 import LanguageSelector from '../components/LanguageSelector';
 import DebugButton from '../components/DebugButton';
+import OutputPanel from '../components/OutputPanel';
 import { parseErrors } from '../utils/errorParser';
 
 const DebugPage = () => {
@@ -10,6 +11,11 @@ const DebugPage = () => {
     const [output, setOutput] = useState('');
     const [isDebugging, setIsDebugging] = useState(false);
     const [errors, setErrors] = useState([]);
+    const [executionResult, setExecutionResult] = useState(null);
+    const [aiSuggestions, setAiSuggestions] = useState(null);
+    const [codeStats, setCodeStats] = useState(null);
+    const [outputHeight, setOutputHeight] = useState(200);
+    const [isResizing, setIsResizing] = useState(false);
 
     const handleLanguageChange = (language) => {
         setSelectedLanguage(language);
@@ -18,6 +24,9 @@ const DebugPage = () => {
         setCode(defaultCode);
         setOutput(''); // Clear output when language changes
         setErrors([]); // Clear errors when language changes
+        setExecutionResult(null); // Clear execution result
+        setAiSuggestions(null); // Clear AI suggestions
+        setCodeStats(null); // Clear code stats
     };
 
     const getDefaultCodeForLanguage = (language) => {
@@ -43,19 +52,32 @@ const DebugPage = () => {
 
     const handleDebugStart = () => {
         setIsDebugging(true);
-        setOutput('🔄 Analyzing code...\n');
+        setOutput('Analyzing code...\n');
         setErrors([]); // Clear previous errors
+        setExecutionResult(null); // Clear previous execution result
+        setAiSuggestions(null); // Clear previous AI suggestions
+        setCodeStats(null); // Clear previous code stats
     };
 
     const handleDebugResult = (result) => {
         setIsDebugging(false);
 
         if (result.error) {
-            setOutput(`❌ Error: ${result.error}\n\nPlease check if the backend server is running.`);
+            setOutput(`ERROR: ${result.error}\n\nPlease check if the backend server is running.`);
             setErrors([]);
+            setExecutionResult(null);
+            setAiSuggestions(null);
+            setCodeStats(null);
         } else {
             // Parse and format the API response
             const { message, result: executionResult, ai_fix } = result;
+
+            // Set code statistics
+            const stats = {
+                lines: code.split('\n').length,
+                characters: code.length
+            };
+            setCodeStats(stats);
 
             // Parse errors for highlighting
             const parsedErrors = [];
@@ -68,61 +90,39 @@ const DebugPage = () => {
             }
             setErrors(parsedErrors);
 
-            let debugOutput = `📊 Debug Analysis Complete!\n\n`;
-            debugOutput += `Language: ${selectedLanguage.toUpperCase()}\n`;
-            debugOutput += `Lines of code: ${code.split('\\n').length}\n`;
-            debugOutput += `Characters: ${code.length}\n\n`;
+            // Set execution result for debug console
+            setExecutionResult(executionResult);
 
-            // Execution Results
-            if (executionResult) {
-                debugOutput += `🔧 Execution Status: ${executionResult.success ? '✅ SUCCESS' : '❌ FAILED'}\n\n`;
+            // Set AI suggestions
+            if (ai_fix) {
+                // Add a mock confidence score for demonstration (you can get this from your API)
+                const aiData = {
+                    ...ai_fix,
+                    confidence: ai_fix.confidence || Math.floor(Math.random() * 30 + 70) // Mock 70-100% confidence
+                };
+                setAiSuggestions(aiData);
+            } else {
+                setAiSuggestions(null);
+            }
+
+            // Create simplified output for the OUTPUT tab (only for successful execution)
+            let debugOutput = '';
+            if (executionResult && executionResult.success && parsedErrors.length === 0) {
+                debugOutput = `Analysis Complete!\n\n`;
+                debugOutput += `Language: ${selectedLanguage.toUpperCase()}\n`;
+                debugOutput += `Lines of code: ${stats.lines}\n`;
+                debugOutput += `Characters: ${stats.characters}\n\n`;
 
                 if (executionResult.execution_time) {
-                    debugOutput += `⏱️ Execution Time: ${executionResult.execution_time}\n\n`;
+                    debugOutput += `Execution Time: ${executionResult.execution_time}\n\n`;
                 }
 
                 // Standard Output
                 if (executionResult.stdout) {
-                    debugOutput += `📤 Output:\n${executionResult.stdout}\n\n`;
+                    debugOutput += `Output:\n${executionResult.stdout}\n`;
+                } else {
+                    debugOutput += `Code executed successfully with no output.\n`;
                 }
-
-                // Error Output
-                if (executionResult.stderr) {
-                    debugOutput += `⚠️ Errors:\n${executionResult.stderr}\n\n`;
-
-                    // Add error highlighting info if errors were found
-                    if (parsedErrors.length > 0) {
-                        debugOutput += `🎯 Found ${parsedErrors.length} error(s) highlighted in the editor\n\n`;
-                    }
-                }
-
-                // General Error
-                if (executionResult.error) {
-                    debugOutput += `❌ Error Details:\n${executionResult.error}\n\n`;
-                }
-            }
-
-            // AI Suggestions
-            if (ai_fix) {
-                debugOutput += `🤖 AI Suggestions:\n`;
-                if (ai_fix.explanation) {
-                    debugOutput += `💡 Explanation: ${ai_fix.explanation}\n\n`;
-                }
-                if (ai_fix.fixed_code) {
-                    debugOutput += `✨ Suggested Fix:\n${ai_fix.fixed_code}\n\n`;
-                }
-                if (ai_fix.suggestions && ai_fix.suggestions.length > 0) {
-                    debugOutput += `📋 Additional Tips:\n`;
-                    ai_fix.suggestions.forEach((tip, index) => {
-                        debugOutput += `${index + 1}. ${tip}\n`;
-                    });
-                    debugOutput += `\n`;
-                }
-            }
-
-            // If no specific output, show success message
-            if (!executionResult?.stdout && !executionResult?.stderr && !executionResult?.error && executionResult?.success) {
-                debugOutput += `✅ Code executed successfully with no output.\n`;
             }
 
             setOutput(debugOutput);
@@ -136,6 +136,50 @@ const DebugPage = () => {
             setErrors([]);
         }
     };
+
+    // Resizing functionality
+    const handleMouseMove = useCallback((e) => {
+        console.log('Mouse move event triggered');
+
+        // Get the current mouse position
+        const mouseY = e.clientY;
+
+        // Get window height
+        const windowHeight = window.innerHeight;
+
+        // Calculate how much space should be for the output panel
+        // Distance from bottom of window to mouse position
+        const newOutputHeight = Math.max(150, Math.min(600, windowHeight - mouseY - 10));
+
+        console.log('Mouse Y:', mouseY, 'Window Height:', windowHeight, 'New Output Height:', newOutputHeight);
+        setOutputHeight(newOutputHeight);
+    }, []);
+
+    const handleMouseUp = useCallback(() => {
+        console.log('Mouse up - ending resize');
+        setIsResizing(false);
+        document.body.classList.remove('resizing');
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+    }, [handleMouseMove]);
+
+    const handleMouseDown = useCallback((e) => {
+        console.log('Mouse down - starting resize');
+        setIsResizing(true);
+        document.body.classList.add('resizing');
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+        e.preventDefault();
+    }, [handleMouseMove, handleMouseUp]);
+
+    // Cleanup event listeners on component unmount
+    useEffect(() => {
+        return () => {
+            document.body.classList.remove('resizing');
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [handleMouseMove, handleMouseUp]);
 
     return (
         <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -166,8 +210,8 @@ const DebugPage = () => {
             {/* Code Editor */}
             <div style={{
                 flex: 1,
-                minHeight: '400px',
-                maxHeight: 'calc(100vh - 300px)',
+                minHeight: '300px',
+                height: `calc(100vh - ${160 + outputHeight}px)`,
                 backgroundColor: '#1e1e1e',
                 border: '1px solid #333',
                 overflow: 'hidden'
@@ -189,26 +233,48 @@ const DebugPage = () => {
                 isLoading={isDebugging}
             />
 
+            {/* Resize Handle */}
+            <div
+                className={`resize-handle ${isResizing ? 'resizing' : ''}`}
+                onMouseDown={handleMouseDown}
+                style={{
+                    height: '6px',
+                    backgroundColor: isResizing ? '#007acc' : '#333',
+                    cursor: 'row-resize',
+                    borderTop: '1px solid #444',
+                    borderBottom: '1px solid #222',
+                    position: 'relative',
+                    zIndex: 1000,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }}
+                title={`Drag to resize. Current height: ${outputHeight}px`}
+            >
+                <div style={{
+                    width: '30px',
+                    height: '2px',
+                    backgroundColor: isResizing ? '#ffffff' : '#555',
+                    borderRadius: '1px',
+                    transition: 'background-color 0.2s ease'
+                }} />
+            </div>
+
             {/* Output Section */}
             <div style={{
-                height: '200px',
-                backgroundColor: '#1e1e1e',
-                color: '#fff',
-                padding: '15px',
-                overflow: 'auto',
-                borderTop: '1px solid #333',
-                fontFamily: 'monospace',
-                fontSize: '14px',
-                whiteSpace: 'pre-wrap'
+                height: `${outputHeight}px`,
+                minHeight: '150px',
+                maxHeight: 'calc(100vh - 300px)',
+                transition: isResizing ? 'none' : 'height 0.1s ease'
             }}>
-                <div style={{
-                    marginBottom: '10px',
-                    fontWeight: 'bold',
-                    color: '#007acc'
-                }}>
-                    Output:
-                </div>
-                {output || 'No output yet. Click "Debug Code" to analyze your code.'}
+                <OutputPanel
+                    output={output}
+                    errors={errors}
+                    isLoading={isDebugging}
+                    executionResult={executionResult}
+                    aiSuggestions={aiSuggestions}
+                    codeStats={codeStats}
+                />
             </div>
         </div>
     );

@@ -45,3 +45,36 @@ html, body {
   background-color: #264f78;
   color: #ffffff;
 }
+
+/* Resize Handle Styles */
+.resize-handle {
+  transition: background-color 0.2s ease;
+  user-select: none;
+}
+
+.resize-handle:hover {
+  background-color: #007acc !important;
+}
+
+.resize-handle.resizing {
+  background-color: #007acc !important;
+}
+
+.resize-handle:hover div {
+  background-color: #ffffff !important;
+}
+
+.resize-handle.resizing div {
+  background-color: #ffffff !important;
+}
+
+/* Prevent text selection during resize */
+body.resizing {
+  user-select: none !important;
+  cursor: row-resize !important;
+}
+
+body.resizing * {
+  cursor: row-resize !important;
+  user-select: none !important;
+}
