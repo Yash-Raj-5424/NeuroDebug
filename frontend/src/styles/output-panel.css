@@ -329,6 +329,33 @@
     gap: 8px;
 }
 
+.ai-header-with-action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.ai-header-with-action .ai-header {
+    margin-bottom: 0;
+}
+
+.show-diff-btn {
+    background-color: #007acc;
+    color: #ffffff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.show-diff-btn:hover {
+    background-color: #005a9e;
+}
+
 .ai-text {
     color: #cccccc;
     line-height: 1.5;

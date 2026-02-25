@@ -7,7 +7,8 @@ const OutputPanel = ({
     isLoading = false,
     executionResult = null,
     aiSuggestions = null,
-    codeStats = null
+    codeStats = null,
+    onShowDiff = null
 }) => {
     const [activeTab, setActiveTab] = useState('output');
 
@@ -132,7 +133,18 @@ const OutputPanel = ({
 
                                 {aiSuggestions.fixed_code && (
                                     <div className="ai-section">
-                                        <div className="ai-header">Fixed Code</div>
+                                        <div className="ai-header-with-action">
+                                            <div className="ai-header">Fixed Code</div>
+                                            {onShowDiff && aiSuggestions.fixed_code.trim() && (
+                                                <button
+                                                    className="show-diff-btn"
+                                                    onClick={() => onShowDiff(aiSuggestions.fixed_code)}
+                                                    title="Show changes in editor"
+                                                >
+                                                    Show in Editor
+                                                </button>
+                                            )}
+                                        </div>
                                         <pre className="ai-code">{aiSuggestions.fixed_code}</pre>
                                     </div>
                                 )}

@@ -3,6 +3,7 @@ import CodeEditor from '../components/CodeEditor';
 import LanguageSelector from '../components/LanguageSelector';
 import DebugButton from '../components/DebugButton';
 import OutputPanel from '../components/OutputPanel';
+import DiffViewer from '../components/DiffViewer';
 import { parseErrors } from '../utils/errorParser';
 
 const DebugPage = () => {
@@ -16,6 +17,9 @@ const DebugPage = () => {
     const [codeStats, setCodeStats] = useState(null);
     const [outputHeight, setOutputHeight] = useState(200);
     const [isResizing, setIsResizing] = useState(false);
+    const [showDiffView, setShowDiffView] = useState(false);
+    const [originalCodeForDiff, setOriginalCodeForDiff] = useState('');
+    const [fixedCodeForDiff, setFixedCodeForDiff] = useState('');
 
     const handleLanguageChange = (language) => {
         setSelectedLanguage(language);
@@ -27,6 +31,9 @@ const DebugPage = () => {
         setExecutionResult(null); // Clear execution result
         setAiSuggestions(null); // Clear AI suggestions
         setCodeStats(null); // Clear code stats
+        setShowDiffView(false); // Exit diff view
+        setOriginalCodeForDiff('');
+        setFixedCodeForDiff('');
     };
 
     const getDefaultCodeForLanguage = (language) => {
@@ -135,6 +142,34 @@ const DebugPage = () => {
         if (errors.length > 0) {
             setErrors([]);
         }
+        // Exit diff view if user starts editing
+        if (showDiffView) {
+            setShowDiffView(false);
+            setOriginalCodeForDiff('');
+            setFixedCodeForDiff('');
+        }
+    };
+
+    // Diff view handlers
+    const handleShowDiff = (fixedCode) => {
+        setOriginalCodeForDiff(code);
+        setFixedCodeForDiff(fixedCode);
+        setShowDiffView(true);
+    };
+
+    const handleKeepChanges = (newCode) => {
+        setCode(newCode);
+        setShowDiffView(false);
+        setOriginalCodeForDiff('');
+        setFixedCodeForDiff('');
+        // Clear errors as we're applying AI fix
+        setErrors([]);
+    };
+
+    const handleDiscardChanges = () => {
+        setShowDiffView(false);
+        setOriginalCodeForDiff('');
+        setFixedCodeForDiff('');
     };
 
     // Resizing functionality
@@ -205,9 +240,21 @@ const DebugPage = () => {
                     selectedLanguage={selectedLanguage}
                     onLanguageChange={handleLanguageChange}
                 />
+                {showDiffView && (
+                    <div style={{
+                        backgroundColor: '#007acc',
+                        color: '#ffffff',
+                        padding: '4px 10px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        textAlign: 'center'
+                    }}>
+                        DIFF MODE: Reviewing AI Code Suggestions
+                    </div>
+                )}
             </div>
 
-            {/* Code Editor */}
+            {/* Code Editor / Diff Viewer */}
             <div style={{
                 flex: 1,
                 minHeight: '300px',
@@ -216,12 +263,23 @@ const DebugPage = () => {
                 border: '1px solid #333',
                 overflow: 'hidden'
             }}>
-                <CodeEditor
-                    language={selectedLanguage}
-                    value={code}
-                    onChange={handleCodeChange}
-                    errors={errors}
-                />
+                {showDiffView ? (
+                    <DiffViewer
+                        originalCode={originalCodeForDiff}
+                        fixedCode={fixedCodeForDiff}
+                        language={selectedLanguage}
+                        onKeep={handleKeepChanges}
+                        onDiscard={handleDiscardChanges}
+                        theme="vs-dark"
+                    />
+                ) : (
+                    <CodeEditor
+                        language={selectedLanguage}
+                        value={code}
+                        onChange={handleCodeChange}
+                        errors={errors}
+                    />
+                )}
             </div>
 
             {/* Debug Button */}
@@ -249,7 +307,7 @@ const DebugPage = () => {
                     alignItems: 'center',
                     justifyContent: 'center'
                 }}
-                title={`Drag to resize. Current height: ${outputHeight}px`}
+                title={showDiffView ? 'Drag to resize. In diff view mode.' : `Drag to resize. Current height: ${outputHeight}px`}
             >
                 <div style={{
                     width: '30px',
@@ -274,6 +332,7 @@ const DebugPage = () => {
                     executionResult={executionResult}
                     aiSuggestions={aiSuggestions}
                     codeStats={codeStats}
+                    onShowDiff={handleShowDiff}
                 />
             </div>
         </div>
