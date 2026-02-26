@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from services.sanitizer import is_code_safe
 from services.executor import execute_code
-from services.llm_service import generate_fix
+from services.llm_service import generate_fix, explain_code
 from services.llm_fallback import generate_fix_fallback
 from services.auto_retry_service import auto_retry_service
 from typing import List, Optional, Dict, Any
@@ -44,6 +44,24 @@ class AutoRetryResponse(BaseModel):
     session_id: str
 
 
+class ExplainCodeRequest(BaseModel):
+    language: str = Field(..., min_length=1, max_length=20)
+    code: str = Field(..., min_length=1, max_length=MAX_CODE_LENGTH)
+
+
+class ExplainCodeRequest(BaseModel):
+    language: str = Field(..., min_length=1, max_length=20)
+    code: str = Field(..., min_length=1, max_length=MAX_CODE_LENGTH)
+
+
+class ExplainCodeResponse(BaseModel):
+    explanation: str
+    time_complexity: str
+    space_complexity: str
+    optimizations: List[str]
+    confidence: float
+
+
 @debug_router.post("/debug")
 async def debug_code(request: DebugRequest):
     language = request.language.lower().strip()
@@ -83,12 +101,8 @@ async def debug_code(request: DebugRequest):
     }
 
 
-@debug_router.post("/auto-retry", response_model=AutoRetryResponse)
-async def auto_retry_debug(request: AutoRetryRequest):
-    """
-    Automatically retry fixing and running code until it succeeds.
-    Flow: Error → Fix → Re-run automatically → Confirm
-    """
+@debug_router.post("/explain-code", response_model=ExplainCodeResponse)
+async def explain_my_code(request: ExplainCodeRequest):
     language = request.language.lower().strip()
 
     if language not in SUPPORTED_LANGUAGES:
@@ -97,18 +111,46 @@ async def auto_retry_debug(request: AutoRetryRequest):
             detail=f"Unsupported language. Supported: {', '.join(SUPPORTED_LANGUAGES)}",
         )
 
-    # Check initial code safety
     is_safe, reason = is_code_safe(request.code)
     if not is_safe:
         raise HTTPException(status_code=400, detail=f"Unsafe code detected: {reason}")
 
-    # Run the complete auto-retry session
+    try:
+        explanation_result = explain_code(language, request.code)
+
+        return ExplainCodeResponse(
+            explanation=explanation_result.explanation,
+            time_complexity=explanation_result.time_complexity,
+            space_complexity=explanation_result.space_complexity,
+            optimizations=explanation_result.optimizations,
+            confidence=explanation_result.confidence,
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=503, detail=f"Code explanation service failed: {str(e)}"
+        )
+
+
+@debug_router.post("/auto-retry", response_model=AutoRetryResponse)
+async def auto_retry_debug(request: AutoRetryRequest):
+    language = request.language.lower().strip()
+
+    if language not in SUPPORTED_LANGUAGES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported language. Supported: {', '.join(SUPPORTED_LANGUAGES)}",
+        )
+
+    is_safe, reason = is_code_safe(request.code)
+    if not is_safe:
+        raise HTTPException(status_code=400, detail=f"Unsafe code detected: {reason}")
+
     try:
         session_result = auto_retry_service.run_complete_session(
             language=language, code=request.code, max_attempts=request.max_attempts
         )
 
-        # Convert to response format
         attempts = []
         for attempt in session_result["attempts"]:
             attempts.append(
@@ -137,7 +179,6 @@ async def auto_retry_debug(request: AutoRetryRequest):
 
 @debug_router.get("/retry-sessions")
 async def get_active_retry_sessions():
-    """Get all active retry sessions."""
     sessions = []
     for session_id, session in auto_retry_service.active_sessions.items():
         sessions.append(session.get_session_summary())
@@ -147,7 +188,6 @@ async def get_active_retry_sessions():
 
 @debug_router.get("/retry-sessions/{session_id}")
 async def get_retry_session(session_id: str):
-    """Get details of a specific retry session."""
     session = auto_retry_service.get_session(session_id)
 
     if not session:
@@ -158,7 +198,6 @@ async def get_retry_session(session_id: str):
 
 @debug_router.delete("/retry-sessions/{session_id}")
 async def cleanup_retry_session(session_id: str):
-    """Manually cleanup a retry session."""
     success = auto_retry_service.cleanup_session(session_id)
 
     if not success:
@@ -169,10 +208,6 @@ async def cleanup_retry_session(session_id: str):
 
 @debug_router.post("/quick-fix")
 async def quick_fix_code(request: DebugRequest):
-    """
-    Quick single-attempt fix without auto-retry.
-    Useful for when you just want one AI suggestion.
-    """
     language = request.language.lower().strip()
 
     if language not in SUPPORTED_LANGUAGES:
@@ -202,7 +237,6 @@ async def quick_fix_code(request: DebugRequest):
                 error=error_text,
             )
         except Exception:
-            # Try fallback if main service fails
             try:
                 ai_suggestion = generate_fix_fallback(
                     language=language,

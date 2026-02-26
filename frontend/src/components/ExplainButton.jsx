@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
-import { debugCode } from "../api/debugApi";
+import React from 'react';
+import { explainCode } from "../api/debugApi";
 
-const DebugButton = ({ code, language, onDebug, onResult, isLoading = false }) => {
+const ExplainButton = ({ code, language, onExplain, onResult, isLoading = false }) => {
     const handleClick = async () => {
         if (!isLoading && code && language) {
-            if (onDebug) {
-                onDebug();
+            if (onExplain) {
+                onExplain();
             }
 
             try {
-                const result = await debugCode(code, language);
+                const result = await explainCode(code, language);
                 if (onResult) {
                     onResult(result);
                 }
             } catch (error) {
-                console.error('Debug API error:', error);
+                console.error('Explain API error:', error);
                 if (onResult) {
-                    onResult({ error: 'Failed to debug code' });
+                    onResult({ error: 'Failed to explain code' });
                 }
             }
         }
@@ -31,35 +31,35 @@ const DebugButton = ({ code, language, onDebug, onResult, isLoading = false }) =
                 fontSize: '16px',
                 fontWeight: 'bold',
                 color: '#fff',
-                backgroundColor: isLoading ? '#6c757d' : '#007acc',
+                backgroundColor: isLoading ? '#6c757d' : '#28a745',
                 border: 'none',
                 borderRadius: '6px',
                 cursor: isLoading ? 'not-allowed' : 'pointer',
                 transition: 'background-color 0.3s ease',
-                minWidth: '120px'
+                minWidth: '150px'
             }}
             onMouseOver={(e) => {
                 if (!isLoading) {
-                    e.target.style.backgroundColor = '#005a9e';
+                    e.target.style.backgroundColor = '#218838';
                 }
             }}
             onMouseOut={(e) => {
                 if (!isLoading) {
-                    e.target.style.backgroundColor = '#007acc';
+                    e.target.style.backgroundColor = '#28a745';
                 }
             }}
         >
             {isLoading ? (
                 <span>
-                    Debugging...
+                    Explaining...
                 </span>
             ) : (
                 <span>
-                    Debug Code
+                    Explain My Code
                 </span>
             )}
         </button>
     );
 };
 
-export default DebugButton;
+export default ExplainButton;

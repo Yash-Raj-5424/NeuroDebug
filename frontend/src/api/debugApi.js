@@ -12,3 +12,18 @@ export async function debugCode(code, language) {
 
   return await response.json();
 }
+
+export async function explainCode(code, language) {
+  const response = await fetch("http://127.0.0.1:8000/api/explain-code", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      code: code,
+      language: language
+    })
+  });
+
+  return await response.json();
+}

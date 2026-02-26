@@ -79,7 +79,6 @@ class AutoRetryService:
         """Execute a single attempt in the retry flow."""
         attempt_start = time.time()
 
-        # Execute the current code
         execution_result = execute_code(session.language, session.current_code)
 
         attempt_data = {
@@ -92,7 +91,6 @@ class AutoRetryService:
             "error_message": None,
         }
 
-        # If successful, we're done
         if execution_result["success"]:
             session.add_attempt(attempt_data)
             return attempt_data
@@ -110,7 +108,6 @@ class AutoRetryService:
             )
             attempt_data["ai_fix"] = ai_fix
 
-            # Apply the fix if valid
             if ai_fix and ai_fix.get("fixed_code"):
                 session.current_code = ai_fix["fixed_code"]
 

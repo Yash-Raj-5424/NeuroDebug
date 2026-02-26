@@ -20,7 +20,6 @@ const CodeEditor = ({ language, value, onChange, errors = [], theme = 'vs-dark' 
         console.log('Monaco Editor before mount');
     };
 
-    // Error highlighting effect
     useEffect(() => {
         if (!editorRef.current || !errors) return;
 
@@ -29,10 +28,8 @@ const CodeEditor = ({ language, value, onChange, errors = [], theme = 'vs-dark' 
 
         if (!model) return;
 
-        // Clear existing markers
         monaco.editor.removeAllMarkers('error-highlight');
 
-        // Add new error markers if there are any
         if (errors.length > 0) {
             const markers = errors.map((error, index) => ({
                 startLineNumber: Math.max(1, error.line),
@@ -46,7 +43,6 @@ const CodeEditor = ({ language, value, onChange, errors = [], theme = 'vs-dark' 
 
             monaco.editor.setModelMarkers(model, 'error-highlight', markers);
 
-            // Scroll to first error if there are errors
             if (errors.length > 0) {
                 const firstError = errors[0];
                 editor.revealLineInCenter(firstError.line);
@@ -54,7 +50,6 @@ const CodeEditor = ({ language, value, onChange, errors = [], theme = 'vs-dark' 
         }
     }, [errors]);
 
-    // Clear markers when component unmounts
     useEffect(() => {
         return () => {
             if (editorRef.current) {
@@ -79,7 +74,6 @@ const CodeEditor = ({ language, value, onChange, errors = [], theme = 'vs-dark' 
         lineDecorationsWidth: 20,
         lineNumbersMinChars: 3,
         renderWhitespace: 'selection',
-        // Enable error highlighting
         renderValidationDecorations: 'on',
     };
 

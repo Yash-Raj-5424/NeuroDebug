@@ -12,7 +12,6 @@ const OutputPanel = ({
 }) => {
     const [activeTab, setActiveTab] = useState('output');
 
-    // Always available tabs
     const tabs = [
         {
             id: 'output',
@@ -107,7 +106,6 @@ const OutputPanel = ({
                             </div>
                         ) : (
                             <div className="ai-suggestions">
-                                {/* Confidence Score */}
                                 {aiSuggestions.confidence && (
                                     <div className="ai-confidence">
                                         <div className="confidence-header">

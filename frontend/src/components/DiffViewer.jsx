@@ -29,7 +29,6 @@ const DiffViewer = ({
         let diffContent = '';
         let lineNum = 1;
 
-        // Simple line-by-line diff
         const maxLines = Math.max(originalLines.length, fixedLines.length);
 
         for (let i = 0; i < maxLines; i++) {

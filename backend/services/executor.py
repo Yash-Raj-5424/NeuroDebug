@@ -2,7 +2,7 @@ import subprocess
 import tempfile
 import os
 
-EXECUTION_TIMEOUT = 3  # seconds
+EXECUTION_TIMEOUT = 3
 
 
 def execute_python(code: str) -> dict:
@@ -116,7 +116,6 @@ def execute_cpp(code: str) -> dict:
         }
 
     finally:
-        # cleanup
         for path in (source_path, binary_path):
             try:
                 if path and os.path.exists(path):

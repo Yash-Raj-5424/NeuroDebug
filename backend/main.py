@@ -11,9 +11,10 @@ app.include_router(debug_router)
 def root():
     return {"message": "NeuroDebug backend running"}
 
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React default
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

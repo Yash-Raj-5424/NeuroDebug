@@ -2,18 +2,21 @@ import React, { useState, useEffect, useCallback } from 'react';
 import CodeEditor from '../components/CodeEditor';
 import LanguageSelector from '../components/LanguageSelector';
 import DebugButton from '../components/DebugButton';
+import ExplainButton from '../components/ExplainButton';
 import OutputPanel from '../components/OutputPanel';
 import DiffViewer from '../components/DiffViewer';
 import { parseErrors } from '../utils/errorParser';
 
 const DebugPage = () => {
     const [selectedLanguage, setSelectedLanguage] = useState('python');
-    const [code, setCode] = useState('# Welcome to NeuroDebug!\nprint("Hello, World!")');
+    const [code, setCode] = useState('print("Hello, World!")');
     const [output, setOutput] = useState('');
     const [isDebugging, setIsDebugging] = useState(false);
+    const [isExplaining, setIsExplaining] = useState(false);
     const [errors, setErrors] = useState([]);
     const [executionResult, setExecutionResult] = useState(null);
     const [aiSuggestions, setAiSuggestions] = useState(null);
+    const [codeExplanation, setCodeExplanation] = useState(null);
     const [codeStats, setCodeStats] = useState(null);
     const [outputHeight, setOutputHeight] = useState(200);
     const [isResizing, setIsResizing] = useState(false);
@@ -23,47 +26,83 @@ const DebugPage = () => {
 
     const handleLanguageChange = (language) => {
         setSelectedLanguage(language);
-        // Set default code based on language
         const defaultCode = getDefaultCodeForLanguage(language);
         setCode(defaultCode);
-        setOutput(''); // Clear output when language changes
-        setErrors([]); // Clear errors when language changes
-        setExecutionResult(null); // Clear execution result
-        setAiSuggestions(null); // Clear AI suggestions
-        setCodeStats(null); // Clear code stats
-        setShowDiffView(false); // Exit diff view
+        setOutput('');
+        setErrors([]);
+        setExecutionResult(null);
+        setAiSuggestions(null);
+        setCodeExplanation(null);
+        setCodeStats(null);
+        setShowDiffView(false);
         setOriginalCodeForDiff('');
         setFixedCodeForDiff('');
     };
 
     const getDefaultCodeForLanguage = (language) => {
         const defaults = {
-            javascript: '// Welcome to NeuroDebug!\nconsole.log("Hello, World!");',
-            typescript: '// Welcome to NeuroDebug!\nfunction greet(name: string): string {\n  return `Hello, ${name}!`;\n}\n\nconsole.log(greet("World"));',
-            python: '# Welcome to NeuroDebug!\nprint("Hello, World!")',
-            java: '// Welcome to NeuroDebug!\npublic class HelloWorld {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}',
-            cpp: '// Welcome to NeuroDebug!\n#include <iostream>\n\nint main() {\n    std::cout << "Hello, World!" << std::endl;\n    return 0;\n}',
-            c: '// Welcome to NeuroDebug!\n#include <stdio.h>\n\nint main() {\n    printf("Hello, World!\\n");\n    return 0;\n}',
-            csharp: '// Welcome to NeuroDebug!\nusing System;\n\nclass Program {\n    static void Main() {\n        Console.WriteLine("Hello, World!");\n    }\n}',
-            go: '// Welcome to NeuroDebug!\npackage main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello, World!")\n}',
-            rust: '// Welcome to NeuroDebug!\nfn main() {\n    println!("Hello, World!");\n}',
-            php: '<?php\n// Welcome to NeuroDebug!\necho "Hello, World!";\n?>',
+            javascript: 'console.log("Hello, World!");',
+            typescript: 'function greet(name: string): string {\n  return `Hello, ${name}!`;\n}\n\nconsole.log(greet("World"));',
+            python: 'print("Hello, World!")',
+            java: 'public class HelloWorld {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}',
+            cpp: '#include <iostream>\n\nint main() {\n    std::cout << "Hello, World!" << std::endl;\n    return 0;\n}',
+            c: '#include <stdio.h>\n\nint main() {\n    printf("Hello, World!\\n");\n    return 0;\n}',
+            csharp: 'using System;\n\nclass Program {\n    static void Main() {\n        Console.WriteLine("Hello, World!");\n    }\n}',
+            go: 'package main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello, World!")\n}',
+            rust: 'fn main() {\n    println!("Hello, World!");\n}',
+            php: '<?php\necho "Hello, World!";\n?>',
             html: '<!-- Welcome to NeuroDebug! -->\n<!DOCTYPE html>\n<html>\n<head>\n    <title>Hello World</title>\n</head>\n<body>\n    <h1>Hello, World!</h1>\n</body>\n</html>',
-            css: '/* Welcome to NeuroDebug! */\nbody {\n    font-family: Arial, sans-serif;\n    background-color: #f0f0f0;\n    text-align: center;\n    padding: 50px;\n}\n\nh1 {\n    color: #333;\n}',
+            css: 'body {\n    font-family: Arial, sans-serif;\n    background-color: #f0f0f0;\n    text-align: center;\n    padding: 50px;\n}\n\nh1 {\n    color: #333;\n}',
             json: '{\n  "message": "Hello, World!",\n  "language": "json",\n  "debug": true\n}',
-            xml: '<?xml version="1.0" encoding="UTF-8"?>\n<!-- Welcome to NeuroDebug! -->\n<root>\n    <message>Hello, World!</message>\n</root>',
-            sql: '-- Welcome to NeuroDebug!\nSELECT \'Hello, World!\' as message;'
+            xml: '<?xml version="1.0" encoding="UTF-8"?>\n<root>\n    <message>Hello, World!</message>\n</root>',
+            sql: 'SELECT \'Hello, World!\' as message;'
         };
-        return defaults[language] || '// Welcome to NeuroDebug!\n// Start coding here...';
+        return defaults[language] || 'console.log("Start coding here...");';
     };
 
     const handleDebugStart = () => {
         setIsDebugging(true);
         setOutput('Analyzing code...\n');
-        setErrors([]); // Clear previous errors
-        setExecutionResult(null); // Clear previous execution result
-        setAiSuggestions(null); // Clear previous AI suggestions
-        setCodeStats(null); // Clear previous code stats
+        setErrors([]);
+        setExecutionResult(null);
+        setAiSuggestions(null);
+        setCodeStats(null);
+    };
+
+    const handleExplainStart = () => {
+        setIsExplaining(true);
+        setOutput('Analyzing code structure and complexity...\n');
+        setCodeExplanation(null);
+    };
+
+    const handleExplainResult = (result) => {
+        setIsExplaining(false);
+
+        if (result.error) {
+            setOutput(`ERROR: ${result.error}\n\nPlease check if the backend server is running.`);
+            setCodeExplanation(null);
+        } else {
+            const { explanation, time_complexity, space_complexity, optimizations, confidence } = result;
+
+            setCodeExplanation(result);
+
+            let explainOutput = 'Code Analysis Complete!\n\n';
+            explainOutput += `EXPLANATION:\n${explanation}\n\n`;
+            explainOutput += `TIME COMPLEXITY: ${time_complexity}\n\n`;
+            explainOutput += `SPACE COMPLEXITY: ${space_complexity}\n\n`;
+
+            if (optimizations && optimizations.length > 0) {
+                explainOutput += `OPTIMIZATION SUGGESTIONS:\n`;
+                optimizations.forEach((opt, index) => {
+                    explainOutput += `${index + 1}. ${opt}\n`;
+                });
+                explainOutput += `\n`;
+            }
+
+            explainOutput += `AI Confidence: ${(confidence * 100).toFixed(1)}%`;
+
+            setOutput(explainOutput);
+        }
     };
 
     const handleDebugResult = (result) => {
@@ -76,17 +115,14 @@ const DebugPage = () => {
             setAiSuggestions(null);
             setCodeStats(null);
         } else {
-            // Parse and format the API response
             const { message, result: executionResult, ai_fix } = result;
 
-            // Set code statistics
             const stats = {
                 lines: code.split('\n').length,
                 characters: code.length
             };
             setCodeStats(stats);
 
-            // Parse errors for highlighting
             const parsedErrors = [];
             if (executionResult && !executionResult.success) {
                 const errorText = executionResult.stderr || executionResult.error;
@@ -97,15 +133,12 @@ const DebugPage = () => {
             }
             setErrors(parsedErrors);
 
-            // Set execution result for debug console
             setExecutionResult(executionResult);
 
-            // Set AI suggestions
             if (ai_fix) {
-                // Add a mock confidence score for demonstration (you can get this from your API)
                 const aiData = {
                     ...ai_fix,
-                    confidence: ai_fix.confidence || Math.floor(Math.random() * 30 + 70) // Mock 70-100% confidence
+                    confidence: ai_fix.confidence || Math.floor(Math.random() * 30 + 70)
                 };
                 setAiSuggestions(aiData);
             } else {
@@ -282,14 +315,29 @@ const DebugPage = () => {
                 )}
             </div>
 
-            {/* Debug Button */}
-            <DebugButton
-                code={code}
-                language={selectedLanguage}
-                onDebug={handleDebugStart}
-                onResult={handleDebugResult}
-                isLoading={isDebugging}
-            />
+            {/* Action Buttons */}
+            <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                padding: '20px',
+                borderTop: '1px solid #e0e0e0',
+                gap: '10px'
+            }}>
+                <DebugButton
+                    code={code}
+                    language={selectedLanguage}
+                    onDebug={handleDebugStart}
+                    onResult={handleDebugResult}
+                    isLoading={isDebugging}
+                />
+                <ExplainButton
+                    code={code}
+                    language={selectedLanguage}
+                    onExplain={handleExplainStart}
+                    onResult={handleExplainResult}
+                    isLoading={isExplaining}
+                />
+            </div>
 
             {/* Resize Handle */}
             <div

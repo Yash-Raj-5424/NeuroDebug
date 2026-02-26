@@ -4,21 +4,18 @@ from dotenv import load_dotenv
 from pydantic import BaseModel
 from openai import OpenAI
 
-# ✅ load env
 load_dotenv()
 
 api_key = os.getenv("OPENROUTER_API_KEY")
 if not api_key:
     raise ValueError("OPENROUTER_API_KEY not set")
 
-# ✅ OpenRouter client
 client = OpenAI(
     api_key=api_key,
     base_url="https://openrouter.ai/api/v1",
 )
 
 
-# ✅ shared response schema
 class BugFixResponse(BaseModel):
     explanation: str
     fixed_code: str
