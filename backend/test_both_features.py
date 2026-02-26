@@ -59,7 +59,6 @@ print(f"Sorted: {sorted_numbers}")
         print(f"Explain API works!")
         print(f"Time Complexity: {result['time_complexity']}")
         print(f"Space Complexity: {result['space_complexity']}")
-        print(f"Confidence: {result['confidence']}")
         print(f"Optimizations: {len(result.get('optimizations', []))} suggestions")
     else:
         print(f"Explain API failed: {response.status_code}")

@@ -263,53 +263,18 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
+    animation: fadeInUp 0.4s ease-out;
 }
 
-.ai-confidence {
-    background-color: #252526;
-    border-radius: 8px;
-    padding: 16px;
-    border-left: 4px solid #ffd700;
-}
-
-.confidence-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: bold;
-    color: #ffffff;
-    margin-bottom: 12px;
-    font-size: 14px;
-}
-
-.confidence-icon {
-    display: none;
-}
-
-.confidence-bar {
-    position: relative;
-    background-color: #3e3e42;
-    border-radius: 8px;
-    height: 24px;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-}
-
-.confidence-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #ff4757 0%, #ffa502 50%, #2ed573 100%);
-    transition: width 0.3s ease;
-    border-radius: 8px;
-}
-
-.confidence-text {
-    position: absolute;
-    right: 8px;
-    color: #ffffff;
-    font-weight: bold;
-    font-size: 12px;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .ai-section {
@@ -317,6 +282,97 @@
     border-radius: 8px;
     padding: 16px;
     border-left: 4px solid #007acc;
+}
+
+/* Enhanced AI Analysis Sections */
+.analysis-section {
+    border-left-color: #4caf50;
+    background: linear-gradient(135deg, #1a1a1a 0%, #252526 100%);
+}
+
+.complexity-section {
+    border-left-color: #ff9800;
+    background: linear-gradient(135deg, #1a1a1a 0%, #252526 100%);
+}
+
+.optimizations-section {
+    border-left-color: #e91e63;
+    background: linear-gradient(135deg, #1a1a1a 0%, #252526 100%);
+}
+
+.section-icon {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.complexity-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    margin-top: 12px;
+}
+
+.complexity-item {
+    background-color: #1a1a1a;
+    border-radius: 6px;
+    padding: 12px;
+    border: 1px solid #333;
+    transition: border-color 0.3s ease;
+}
+
+.complexity-item:hover {
+    border-color: #555;
+}
+
+.complexity-label {
+    display: flex;
+    align-items: center;
+    color: #cccccc;
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.complexity-icon {
+    margin-right: 6px;
+    font-size: 14px;
+}
+
+.complexity-value {
+    color: #79c0ff;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 14px;
+    font-weight: bold;
+    background-color: #0d1117;
+    padding: 8px 10px;
+    border-radius: 4px;
+    border: 1px solid #21262d;
+}
+
+.optimization-list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0 0;
+}
+
+.optimization-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 1px solid #333;
+    color: #cccccc;
+    line-height: 1.5;
+}
+
+.optimization-item:last-child {
+    border-bottom: none;
+}
+
+.optimization-bullet {
+    margin-right: 10px;
+    margin-top: 2px;
+    flex-shrink: 0;
+    font-size: 14px;
 }
 
 .ai-header {

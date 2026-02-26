@@ -59,7 +59,6 @@ print(result)
 
                 if attempt["ai_fix"]:
                     print(f"🤖 AI Fix: {attempt['ai_fix']['explanation']}")
-                    print(f"🎯 Confidence: {attempt['ai_fix']['confidence']}")
 
             if result["success"]:
                 print("\n🎉 Final working code:")
@@ -101,7 +100,6 @@ greet("World")
 
             if result["ai_fix"]:
                 print(f"🤖 AI Suggestion: {result['ai_fix']['explanation']}")
-                print(f"🎯 Confidence: {result['ai_fix']['confidence']}")
                 print("\n🔧 Suggested fix:")
                 print(result["ai_fix"]["fixed_code"])
         else:

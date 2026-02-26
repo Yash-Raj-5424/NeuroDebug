@@ -130,7 +130,6 @@ class AutoRetryService:
                     return {
                         "explanation": ai_suggestion.explanation,
                         "fixed_code": ai_suggestion.fixed_code,
-                        "confidence": ai_suggestion.confidence,
                         "source": "primary",
                     }
                 else:
@@ -149,7 +148,6 @@ class AutoRetryService:
             return {
                 "explanation": f"All AI services failed: {str(e)}",
                 "fixed_code": "",
-                "confidence": 0.0,
                 "source": "error",
             }
 
@@ -167,7 +165,6 @@ class AutoRetryService:
                     return {
                         "explanation": fallback_suggestion.explanation,
                         "fixed_code": fallback_suggestion.fixed_code,
-                        "confidence": fallback_suggestion.confidence,
                         "source": "fallback",
                     }
 

@@ -17,7 +17,7 @@ const OutputPanel = ({
             id: 'output',
             label: 'OUTPUT',
             icon: '',
-            count: (executionResult && executionResult.success && errors.length === 0) ? 1 : 0
+            count: (executionResult && executionResult.success && errors.length === 0 && output && output.trim()) ? 1 : 0
         },
         {
             id: 'problems',
@@ -106,27 +106,75 @@ const OutputPanel = ({
                             </div>
                         ) : (
                             <div className="ai-suggestions">
-                                {aiSuggestions.confidence && (
-                                    <div className="ai-confidence">
-                                        <div className="confidence-header">
-                                            <span className="confidence-icon">TARGET</span>
-                                            <span>Confidence Score</span>
-                                        </div>
-                                        <div className="confidence-bar">
-                                            <div
-                                                className="confidence-fill"
-                                                style={{ width: `${aiSuggestions.confidence}%` }}
-                                            ></div>
-                                            <span className="confidence-text">{aiSuggestions.confidence}%</span>
-                                        </div>
-                                    </div>
-                                )}
+                                {/* Code Analysis Display */}
+                                {aiSuggestions.type === 'code_analysis' ? (
+                                    <>
+                                        {aiSuggestions.explanation && (
+                                            <div className="ai-section analysis-section">
+                                                <div className="ai-header">
+                                                    <span className="section-icon">📖</span>
+                                                    Code Explanation
+                                                </div>
+                                                <p className="ai-text">{aiSuggestions.explanation}</p>
+                                            </div>
+                                        )}
 
-                                {aiSuggestions.explanation && (
-                                    <div className="ai-section">
-                                        <div className="ai-header">Explanation</div>
-                                        <p className="ai-text">{aiSuggestions.explanation}</p>
-                                    </div>
+                                        {(aiSuggestions.time_complexity || aiSuggestions.space_complexity) && (
+                                            <div className="ai-section complexity-section">
+                                                <div className="ai-header">
+                                                    <span className="section-icon">⚡</span>
+                                                    Complexity Analysis
+                                                </div>
+                                                <div className="complexity-grid">
+                                                    {aiSuggestions.time_complexity && (
+                                                        <div className="complexity-item">
+                                                            <div className="complexity-label">
+                                                                <span className="complexity-icon">⏱️</span>
+                                                                Time Complexity
+                                                            </div>
+                                                            <div className="complexity-value">{aiSuggestions.time_complexity}</div>
+                                                        </div>
+                                                    )}
+                                                    {aiSuggestions.space_complexity && (
+                                                        <div className="complexity-item">
+                                                            <div className="complexity-label">
+                                                                <span className="complexity-icon">💾</span>
+                                                                Space Complexity
+                                                            </div>
+                                                            <div className="complexity-value">{aiSuggestions.space_complexity}</div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {aiSuggestions.optimizations && aiSuggestions.optimizations.length > 0 && (
+                                            <div className="ai-section optimizations-section">
+                                                <div className="ai-header">
+                                                    <span className="section-icon">🚀</span>
+                                                    Optimization Suggestions
+                                                </div>
+                                                <ul className="optimization-list">
+                                                    {aiSuggestions.optimizations.map((opt, index) => (
+                                                        <li key={index} className="optimization-item">
+                                                            <span className="optimization-bullet">💡</span>
+                                                            {opt}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <>
+                                        {/* Regular AI suggestions (for debug fixes) */}
+                                        {aiSuggestions.explanation && (
+                                            <div className="ai-section">
+                                                <div className="ai-header">Explanation</div>
+                                                <p className="ai-text">{aiSuggestions.explanation}</p>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
 
                                 {aiSuggestions.fixed_code && (

@@ -81,27 +81,22 @@ const DebugPage = () => {
         if (result.error) {
             setOutput(`ERROR: ${result.error}\n\nPlease check if the backend server is running.`);
             setCodeExplanation(null);
+            setAiSuggestions(null);
         } else {
-            const { explanation, time_complexity, space_complexity, optimizations, confidence } = result;
+            const { explanation, time_complexity, space_complexity, optimizations } = result;
 
             setCodeExplanation(result);
 
-            let explainOutput = 'Code Analysis Complete!\n\n';
-            explainOutput += `EXPLANATION:\n${explanation}\n\n`;
-            explainOutput += `TIME COMPLEXITY: ${time_complexity}\n\n`;
-            explainOutput += `SPACE COMPLEXITY: ${space_complexity}\n\n`;
+            // Structure explanation data for appealing display in AI assistant tab
+            setAiSuggestions({
+                explanation: explanation,
+                time_complexity: time_complexity,
+                space_complexity: space_complexity,
+                optimizations: optimizations || [],
+                type: 'code_analysis'
+            });
 
-            if (optimizations && optimizations.length > 0) {
-                explainOutput += `OPTIMIZATION SUGGESTIONS:\n`;
-                optimizations.forEach((opt, index) => {
-                    explainOutput += `${index + 1}. ${opt}\n`;
-                });
-                explainOutput += `\n`;
-            }
-
-            explainOutput += `AI Confidence: ${(confidence * 100).toFixed(1)}%`;
-
-            setOutput(explainOutput);
+            setOutput('');
         }
     };
 
@@ -136,11 +131,7 @@ const DebugPage = () => {
             setExecutionResult(executionResult);
 
             if (ai_fix) {
-                const aiData = {
-                    ...ai_fix,
-                    confidence: ai_fix.confidence || Math.floor(Math.random() * 30 + 70)
-                };
-                setAiSuggestions(aiData);
+                setAiSuggestions(ai_fix);
             } else {
                 setAiSuggestions(null);
             }

@@ -43,7 +43,6 @@ print("Optimized:", fibonacci_optimized(10))
             print(f"Explanation: {result.get('explanation', 'No explanation')}")
             print(f"Time Complexity: {result.get('time_complexity', 'Not provided')}")
             print(f"Space Complexity: {result.get('space_complexity', 'Not provided')}")
-            print(f"Confidence: {result.get('confidence', 0)}")
 
             optimizations = result.get("optimizations", [])
             if optimizations:

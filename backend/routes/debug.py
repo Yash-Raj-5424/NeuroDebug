@@ -59,7 +59,6 @@ class ExplainCodeResponse(BaseModel):
     time_complexity: str
     space_complexity: str
     optimizations: List[str]
-    confidence: float
 
 
 @debug_router.post("/debug")
@@ -123,7 +122,6 @@ async def explain_my_code(request: ExplainCodeRequest):
             time_complexity=explanation_result.time_complexity,
             space_complexity=explanation_result.space_complexity,
             optimizations=explanation_result.optimizations,
-            confidence=explanation_result.confidence,
         )
 
     except Exception as e:
@@ -250,11 +248,9 @@ async def quick_fix_code(request: DebugRequest):
                     {
                         "explanation": f"All AI services failed: {str(e)}",
                         "fixed_code": "",
-                        "confidence": 0.0,
                         "model_dump": lambda: {
                             "explanation": f"All AI services failed: {str(e)}",
                             "fixed_code": "",
-                            "confidence": 0.0,
                         },
                     },
                 )()

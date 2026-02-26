@@ -16,7 +16,6 @@ client = genai.Client(api_key=api_key)
 class BugFixResponse(BaseModel):
     explanation: str
     fixed_code: str
-    confidence: float
 
 
 class CodeExplanationResponse(BaseModel):
@@ -24,7 +23,6 @@ class CodeExplanationResponse(BaseModel):
     time_complexity: str
     space_complexity: str
     optimizations: list[str]
-    confidence: float
 
 
 def generate_fix(language: str, code: str, error: str) -> BugFixResponse:
@@ -41,11 +39,9 @@ Error:
 Respond ONLY with valid JSON in this format:
 {{
   "explanation": "Brief explanation of the issue and fix",
-  "fixed_code": "Complete corrected code",
-  "confidence": 0.95
+  "fixed_code": "Complete corrected code"
 }}
 
-The confidence field should be a float between 0.0 and 1.0 indicating your certainty about the fix.
 Do not include markdown or extra text.
 """
 
@@ -64,13 +60,10 @@ Do not include markdown or extra text.
             return BugFixResponse(
                 explanation=f"Failed to parse LLM response: {parse_error}",
                 fixed_code="",
-                confidence=0.0,
             )
 
     except Exception as e:
-        return BugFixResponse(
-            explanation=f"LLM error: {str(e)}", fixed_code="", confidence=0.0
-        )
+        return BugFixResponse(explanation=f"LLM error: {str(e)}", fixed_code="")
 
 
 def explain_code(language: str, code: str) -> CodeExplanationResponse:
@@ -86,8 +79,7 @@ Provide a comprehensive analysis in this exact JSON format:
   "explanation": "Clear explanation of what this code does, step by step",
   "time_complexity": "Time complexity analysis (e.g., O(n), O(log n), O(n^2))",
   "space_complexity": "Space complexity analysis (e.g., O(1), O(n))", 
-  "optimizations": ["List of specific optimization suggestions", "Improvement 2", "Improvement 3"],
-  "confidence": 0.95
+  "optimizations": ["List of specific optimization suggestions", "Improvement 2", "Improvement 3"]
 }}
 
 Guidelines:
@@ -95,7 +87,6 @@ Guidelines:
 - time_complexity: Analyze worst-case time complexity with reasoning
 - space_complexity: Analyze space usage with reasoning  
 - optimizations: Provide 2-5 actionable optimization suggestions
-- confidence: Float between 0.0-1.0 indicating certainty
 
 Respond ONLY with valid JSON. No markdown or extra text.
 """
@@ -117,7 +108,6 @@ Respond ONLY with valid JSON. No markdown or extra text.
                 time_complexity="Unable to determine",
                 space_complexity="Unable to determine",
                 optimizations=["AI analysis failed"],
-                confidence=0.0,
             )
 
     except Exception as e:
@@ -126,5 +116,4 @@ Respond ONLY with valid JSON. No markdown or extra text.
             time_complexity="Unable to determine",
             space_complexity="Unable to determine",
             optimizations=["AI service unavailable"],
-            confidence=0.0,
         )
